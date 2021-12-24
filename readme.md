@@ -1,4 +1,4 @@
-From [Python Engineer](https://www.youtube.com/watch?v=EMXfZB8FVUA&list=PLqnslRFeH2UrcDBWF5mfPGpqQDSta6VK4&index=1)
+Based on [Pytorch Tutorials](https://www.youtube.com/watch?v=EMXfZB8FVUA&list=PLqnslRFeH2UrcDBWF5mfPGpqQDSta6VK4&index=1) by Python Engineer
 
 
 For import torch to work:
