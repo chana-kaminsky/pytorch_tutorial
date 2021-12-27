@@ -59,8 +59,8 @@ x_test = torch.tensor([userInput], dtype=torch.float32)
 print(f'Prediction before training: f({userInput}) = {model(x_test).item():.3f}')
 
 # Training
-learning_rate = 0.01
-numberOfIterations = 200
+learning_rate = 0.1 # 0.01
+numberOfIterations = 300 # 200
 
 # the MSE, which is what we were doing before manually
 # it's a callable funtion, so can call it like in line 59
