@@ -65,7 +65,6 @@ import torch
 weights = torch.ones(4, requires_grad=True)
 
 
-
 # when call backward func, gradient for tensor
 # is accumulated into .grad attribute
 
