@@ -1,16 +1,16 @@
-#TensorBoard is a visualization toolkit that can be used with pytorch,
-#it can help visualize and analyze model and training pipeline.
+# TensorBoard is a visualization toolkit that can be used with pytorch,
+# it can help visualize and analyze model and training pipeline.
 
-#can see different things to do on the website:
-#https://www.tensorflow.org/tensorboard/
+# can see different things to do on the website:
+# https://www.tensorflow.org/tensorboard/
 
-#can also use it in code
+# can also use it in code
 
 # to make a tensorboard:
 # - open anaconda shell
 # - activate pytorch environment
 # - GO TO DIRECTORY that code is in !!!
-# - do command 'tensorboard --logdir-runs'
+# - do command 'tensorboard --logdir=runs'
 # - it might say that tensorflow is not installed but that's ok
 # - copy the url and paste in browser
 # - import the tensorboard like in line 27 
@@ -18,7 +18,7 @@
 # - to run the program, open another anaconda shell 
 #     and run from command line
 
-#copy code from module 13
+# copy code from module 13
 
 import torch
 import torch.nn as nn
@@ -27,6 +27,7 @@ import torchvision.transforms as transforms
 import matplotlib.pyplot as plt # to show data
 import torch.utils.data
 import sys
+import torch.nn.functional as F
 
 # import tensorboard
 from torch.utils.tensorboard.writer import SummaryWriter
@@ -89,7 +90,7 @@ writer.close()
 # want to exit here
 # sys.exit() # comment this out to run the graph
 
-# ^seen an 8 x 8 grid on tensorboard since batch size is 64
+# ^see an 8 x 8 grid on tensorboard since batch size is 64
 
 # make an NN with one hidden layer
 class NeuralNetwork(nn.Module):
@@ -175,6 +176,18 @@ for epoch in range(num_epochs):
 # when reload, that each of the graphs have a second line for mnist2
 # so can clearly see the differeces between the learning rates
 
+# can also add precision recall (pr) curves, which helps with
+# understanding model performance and threshold settings,
+# makes more sense with binary classification problems
+# wikipedia -> precision measures quality, recall measures quantity
+
+# should check out https://www.pytorch.org/docs/stable/tensorboard.html
+# it talks about the add_pr_curve method
+
+# adding a precision recall curve for each class
+labelsList = []
+preds = []
+
 # test
 with torch.no_grad():
     n_correct = 0
@@ -191,6 +204,41 @@ with torch.no_grad():
         n_samples += labels.shape[0]
         n_correct += (predictions == labels).sum().item()
 
+        # --- TensorBoard Stuff ---
+        # use softmax to get probabilities between 0 and 1
+        # use list comprehension, dim is the dimension
+        class_predictions = [F.softmax(output, dim=0) for output in outputs]
+        preds.append(class_predictions)
+        labelsList.append(predictions)
+    
+    # stack the predictions and concatonate 
+    # into 2D tensor using list comprehension
+    # shape is 10000 x 10, because 10000 samples 
+    # and 10 classes, and it's stacked for each class
+    preds = torch.cat([torch.stack(batch) for batch in preds])
+
+    # concatonate all elements in labels list into a 1D tensor
+    # shape is 10000 x 1
+    labelsList = torch.cat(labelsList)
+
 # calculate total accuracy
 accuracy = 100.0 * n_correct / n_samples
 print(f'accuracy = {accuracy}')
+
+# add the pr curve
+classes = range(10)
+for i in classes:
+    labels_i = labelsList == i
+
+    # preds_i = all samples in current class
+    preds_i = preds[:, i]
+
+    # from pytorch website, add_pr_curve takes:
+    # add_pr_curve(tag, labels, predictions, global_step=None, 
+    # num_thresholds=127, weights=None, walltime=None)
+    writer.add_pr_curve(str(i), labels_i, preds_i, global_step=0)
+    writer.close()
+
+# now should see the pr curves for each class label
+# precision on y axis, recall on x axis
+# can analyze for different thresholds
